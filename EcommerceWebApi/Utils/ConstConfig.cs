@@ -8,6 +8,7 @@
 
         // Error message
         public const string InvalidId = "Id is invalid!";
+        public const string InvalidBody = "Data submit is invalid!";
         public const string NotFound = "Not found!";
         public const string InternalServer = "Something went wrong!";
 

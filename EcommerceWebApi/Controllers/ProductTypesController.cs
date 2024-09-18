@@ -12,16 +12,10 @@ namespace EcommerceWebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductTypesController : ControllerBase
+    public class ProductTypesController(EcommerceDbContext db, IMapper mapper) : ControllerBase
     {
-        private readonly EcommerceDbContext _db;
-        private readonly IMapper _mapper;
-
-        public ProductTypesController(EcommerceDbContext db, IMapper mapper)
-        {
-            _db = db;
-            _mapper = mapper;
-        }
+        private readonly EcommerceDbContext _db = db;
+        private readonly IMapper _mapper = mapper;
 
         // GET: api/<ProductTypes>
         [HttpGet]

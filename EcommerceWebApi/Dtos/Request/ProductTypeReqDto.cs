@@ -1,8 +1,7 @@
-﻿namespace EcommerceWebApi.Dtos.Response
+﻿namespace EcommerceWebApi.Dtos.Request
 {
-    public class ProductTypeDto
+    public class ProductTypeReqDto
     {
-        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
     }

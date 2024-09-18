@@ -2,7 +2,14 @@
 {
     public class ProductTypeQP
     {
-        public string? sortBy { get; set; }
-        public int? page { get; set; } = 1;
+        private int _page = 1;
+
+        public string? SortBy { get; set; }
+
+        public int Page
+        {
+            get => _page;
+            set => _page = value >= 1 ? value : _page;
+        }
     }
 }

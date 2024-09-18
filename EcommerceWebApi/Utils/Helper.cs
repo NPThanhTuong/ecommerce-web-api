@@ -36,5 +36,13 @@ namespace EcommerceWebApi.Utils
 
             return result;
         }
+
+        public static ErrorDto ErrorResponse(string message)
+        {
+            return new ErrorDto
+            {
+                Message = message
+            };
+        }
     }
 }

@@ -15,3 +15,14 @@
 ``Update-Database``
 
 5. Khởi chạy dự án.
+
+## Sử dụng chức năng liên quan đến email
+
+1. Truy cập vào đường dẫn này <https://ethereal.email/>
+
+2. Đăng nhập vào với
+
+**email address:** steve.kling@ethereal.email  
+**password:** 9qtcvRK2xFfJQX8X9P
+
+3. Vào mục **Messages** để xem thư đã gửi và nhận.

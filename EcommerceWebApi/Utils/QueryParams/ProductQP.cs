@@ -1,4 +1,6 @@
-﻿namespace EcommerceWebApi.Utils.QueryParams
+﻿using Swashbuckle.AspNetCore.Annotations;
+
+namespace EcommerceWebApi.Utils.QueryParams
 {
     public class ProductQP
     {
@@ -6,7 +8,9 @@
         private string _sortBy = "id";
         private string _sortType = "asc";
 
+        [SwaggerParameter(Description = "minPrice_maxPrice (vd: 100_600) (đơn vị nghìn đồng)")]
         public string? FByPrice { get; set; }
+        [SwaggerParameter(Description = "FByType: typeId1,typeId2,... (vd: 1,3,8) ")]
         public string? FByType { get; set; }
         public string? Search { get; set; }
 
@@ -16,12 +20,22 @@
             set => _page = value >= 1 ? value : _page;
         }
 
+        [SwaggerParameter(Description = "SortBy: attributeName (vd: rating) " +
+            "attributeName{id, rating, like, sold, price} " +
+            "rating: tỷ lệ đánh giá " +
+            "like: mức độ yêu thích " +
+            "sold: doanh số đã bán " +
+            "price: mức giá")]
         public string SortBy
         {
             get => _sortBy;
             set => _sortBy = string.IsNullOrEmpty(value) ? _sortBy : value.ToLower();
         }
 
+        [SwaggerParameter(Description = "SortType: type (vd: asc) " +
+            "type{asc, desc} " +
+            "asc: sắp xếp tăng dần " +
+            "desc: sắp xếp giảm dần")]
         public string SortType
         {
             get => _sortType;

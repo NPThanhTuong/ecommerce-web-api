@@ -9,6 +9,7 @@ using EcommerceWebApi.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -23,6 +24,7 @@ namespace EcommerceWebApi.Controllers
 
         // GET: api/<ProductsController>
         [HttpGet]
+        [SwaggerOperation(Summary = "Lấy tất cả sản phẩm")]
         public async Task<ActionResult<PaginationDto<List<ProductResDto>>>> GetAll([FromQuery] ProductQP queryParams)
         {
             IQueryable<Product> query = _db.Products
@@ -49,7 +51,7 @@ namespace EcommerceWebApi.Controllers
                 List<int> filterTypesId = [];
                 foreach (string filterType in filterTypesInput)
                 {
-                    if (int.TryParse(filterType, out int typeOutput))
+                    if (int.TryParse(filterType.Trim(), out int typeOutput))
                         filterTypesId.Add(typeOutput);
                 }
 
@@ -117,6 +119,7 @@ namespace EcommerceWebApi.Controllers
 
         // GET api/<ProductsController>/5
         [HttpGet("{id}")]
+        [SwaggerOperation(Summary = "Lấy chi tiết 1 sản phẩm theo ID")]
         public async Task<ActionResult<DetailProductResDto>> GetDetail(int id)
         {
             if (id <= 0)
@@ -144,6 +147,7 @@ namespace EcommerceWebApi.Controllers
 
         // POST api/<ProductsController>
         [HttpPost]
+        [SwaggerOperation(Summary = "Thêm 1 sản phẩm mới")]
         public async Task<ActionResult> Post([FromBody] ProductReqDto product)
         {
             var validator = new ProductValidator();
@@ -176,6 +180,7 @@ namespace EcommerceWebApi.Controllers
 
         // PUT api/<ProductsController>/5
         [HttpPut("{id}")]
+        [SwaggerOperation(Summary = "Cập nhật 1 sản phẩm theo ID")]
         public async Task<ActionResult> Put(int id, [FromBody] ProductReqDto updatProduct)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -212,6 +217,7 @@ namespace EcommerceWebApi.Controllers
 
         // DELETE api/<ProductsController>/5
         [HttpDelete("{id}")]
+        [SwaggerOperation(Summary = "Xóa 1 sản phẩm theo ID")]
         public async Task<ActionResult> Delete(int id)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -235,6 +241,7 @@ namespace EcommerceWebApi.Controllers
 
         // POST api/<ProductsController>/2/Images
         [HttpPost("{id}/Images")]
+        [SwaggerOperation(Summary = "Thêm 1 mảng các hình ảnh cho 1 sản phẩm theo ID")]
         public async Task<ActionResult> PostImage(int id, [FromBody] List<ProductImageReqDto> images)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -272,6 +279,7 @@ namespace EcommerceWebApi.Controllers
 
         // DELETE api/<ProductsController>/2/Images/3
         [HttpDelete("{productId}/Images/{imageId}")]
+        [SwaggerOperation(Summary = "Xóa 1 hình ảnh theo ID của sản phẩm và hình ảnh")]
         public async Task<ActionResult> PostImage(int productId, int imageId)
         {
             if (productId <= 0 || imageId <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));

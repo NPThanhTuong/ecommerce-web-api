@@ -44,6 +44,8 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>()
         }
     });
+
+    options.EnableAnnotations();
 });
 
 // Add CORS

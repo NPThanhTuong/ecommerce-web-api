@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EcommerceWebApi.Models
 {
+    [Index(nameof(Email), IsUnique = true)]
     public class Account
     {
         public int Id { get; set; }

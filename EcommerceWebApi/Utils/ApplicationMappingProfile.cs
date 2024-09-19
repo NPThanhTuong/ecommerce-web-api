@@ -51,6 +51,14 @@ namespace EcommerceWebApi.Utils
                 .ForMember(dest => dest.Shop, opt => opt.MapFrom(src => src.Shop))
                 .ForMember(dest => dest.ProductType, opt => opt.MapFrom(src => src.ProductType));
 
+            // Register
+            CreateMap<RegisterReqDto, Account>()
+                .ForPath(dest => dest.Customer.Name, opt => opt.MapFrom(src => src.Name))
+                .ForPath(dest => dest.Customer.CustomerTypeId, opt => opt.MapFrom(src => ConstConfig.CommonCustomerCode))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => ConstConfig.DefaultAvatar))
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => ConstConfig.UserRoleCode))
+                .ForMember(dest => dest.Password, opt => opt.MapFrom(src => BCrypt.Net.BCrypt.HashPassword(src.Password)));
+
 
         }
     }

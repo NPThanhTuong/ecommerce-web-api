@@ -6,7 +6,7 @@ namespace EcommerceWebApi.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public DateOnly Dob { get; set; }
+        public DateOnly? Dob { get; set; }
         public string Description { get; set; } = string.Empty;
 
         public int AccountId { get; set; }

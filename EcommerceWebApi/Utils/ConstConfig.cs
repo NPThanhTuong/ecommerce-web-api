@@ -5,6 +5,15 @@
         // Pagination
         public const int PageSize = 2;
 
+        // Default field
+        public const string DefaultAvatar = "no-avatar.jpg";
+        public const string DefaultImage = "no-image.jpg";
+
+        // Default Code
+        public const int AdminRoleCode = 1;
+        public const int UserRoleCode = 2;
+        public const int ShopRoleCode = 3;
+        public const int CommonCustomerCode = 1;
 
         // Error message
         public const string InvalidId = "Id is invalid!";
@@ -22,5 +31,17 @@
         public const int MaxPasswordLength = 20;
         public const int DescriptionLength = 4096;
         public const int LongDescriptionLength = 8000;
+
+        // Jwt
+        public const int ExperyTimeJwtToken = 60 * 24 * 15;
+
+        // Common
+        public const int VerifyEmailTokenLength = 5;
+
+        // CORS
+        public const string AllowSpecificOrigins = "AllowSpecific";
+        public const string AllowAllOrigins = "AllowAll";
+        public const int ClientPort = 3000;
+
     }
 }

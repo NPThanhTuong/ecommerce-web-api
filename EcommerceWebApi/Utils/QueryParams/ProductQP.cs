@@ -1,6 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-
-namespace EcommerceWebApi.Utils.QueryParams
+﻿namespace EcommerceWebApi.Utils.QueryParams
 {
     public class ProductQP
     {
@@ -21,13 +19,13 @@ namespace EcommerceWebApi.Utils.QueryParams
         public string SortBy
         {
             get => _sortBy;
-            set => _sortBy = value.IsNullOrEmpty() ? _sortBy : value.ToLower();
+            set => _sortBy = string.IsNullOrEmpty(value) ? _sortBy : value.ToLower();
         }
 
         public string SortType
         {
             get => _sortType;
-            set => _sortType = value.IsNullOrEmpty() ? _sortType : value.ToLower();
+            set => _sortType = string.IsNullOrEmpty(value) ? _sortType : value.ToLower();
         }
     }
 }

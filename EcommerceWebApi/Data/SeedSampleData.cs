@@ -1,4 +1,5 @@
 ﻿using EcommerceWebApi.Models;
+using EcommerceWebApi.Utils;
 using EcommerceWebApi.Utils.EnumTypes;
 using Microsoft.EntityFrameworkCore;
 
@@ -67,18 +68,18 @@ namespace EcommerceWebApi.Data
         {
             builder.Entity<Role>().HasData(new()
             {
-                Id = 1,
+                Id = ConstConfig.AdminRoleCode,
                 Name = "Admin",
             },
             new()
             {
-                Id = 2,
+                Id = ConstConfig.UserRoleCode,
                 Name = "User",
             },
             new()
             {
-                Id = 3,
-                Name = "Seller",
+                Id = ConstConfig.ShopRoleCode,
+                Name = "Shop",
             });
 
             return builder;
@@ -97,7 +98,7 @@ namespace EcommerceWebApi.Data
                 CreatedAt = DateTime.Now.AddDays(-10),
                 UpdatedAt = DateTime.Now,
                 VerifiedAt = DateTime.Now.AddDays(-8),
-                RoleId = 1
+                RoleId = ConstConfig.AdminRoleCode
             },
             new Account
             {
@@ -110,7 +111,7 @@ namespace EcommerceWebApi.Data
                 CreatedAt = DateTime.Now.AddDays(-20),
                 UpdatedAt = DateTime.Now,
                 VerifiedAt = null,
-                RoleId = 2
+                RoleId = ConstConfig.UserRoleCode
             },
             new Account
             {
@@ -123,7 +124,7 @@ namespace EcommerceWebApi.Data
                 CreatedAt = DateTime.Now.AddDays(-15),
                 UpdatedAt = DateTime.Now,
                 VerifiedAt = DateTime.Now.AddDays(-10),
-                RoleId = 2
+                RoleId = ConstConfig.UserRoleCode
             },
             new Account
             {
@@ -136,7 +137,7 @@ namespace EcommerceWebApi.Data
                 CreatedAt = DateTime.Now.AddDays(-5),
                 UpdatedAt = DateTime.Now,
                 VerifiedAt = null,
-                RoleId = 3
+                RoleId = ConstConfig.ShopRoleCode
             },
             new Account
             {
@@ -149,7 +150,7 @@ namespace EcommerceWebApi.Data
                 CreatedAt = DateTime.Now.AddDays(-30),
                 UpdatedAt = DateTime.Now,
                 VerifiedAt = DateTime.Now.AddDays(-25),
-                RoleId = 3
+                RoleId = ConstConfig.ShopRoleCode
             });
 
             return builder;
@@ -292,7 +293,7 @@ namespace EcommerceWebApi.Data
         {
             builder.Entity<CustomerType>().HasData(new CustomerType
             {
-                Id = 1,
+                Id = ConstConfig.CommonCustomerCode,
                 Name = "Khách hàng thông thường",
                 Description = "Toàn bộ khách hàng thông thường có mua hàng nhưng ít",
             },
@@ -315,7 +316,7 @@ namespace EcommerceWebApi.Data
                 Dob = new DateOnly(1990, 5, 10),
                 Description = "Mô tả của khách hàng Nguyễn Văn A",
                 AccountId = 2,
-                CustomerTypeId = 1
+                CustomerTypeId = ConstConfig.CommonCustomerCode
             },
             new Customer
             {
@@ -808,12 +809,12 @@ namespace EcommerceWebApi.Data
         {
             builder.Entity<CustomerTypeSaleEvent>().HasData(new CustomerTypeSaleEvent
             {
-                CustomerTypeId = 1,
+                CustomerTypeId = ConstConfig.CommonCustomerCode,
                 SaleEventId = 1
             },
             new CustomerTypeSaleEvent
             {
-                CustomerTypeId = 1,
+                CustomerTypeId = ConstConfig.CommonCustomerCode,
                 SaleEventId = 2
             },
             new CustomerTypeSaleEvent

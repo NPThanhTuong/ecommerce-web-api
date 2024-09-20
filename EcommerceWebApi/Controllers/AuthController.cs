@@ -137,6 +137,52 @@ namespace EcommerceWebApi.Controllers
 
         // POST: api/<AuthController>/register
         [HttpPost]
+        [Route("register/shop")]
+        public async Task<ActionResult> RegisterShop([FromBody] RegisterShopReqDto registerShopReq)
+        {
+            try
+            {
+                var validation = new RegisterShopValidator();
+                var validationResult = await validation.ValidateAsync(registerShopReq);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.ToDictionary());
+
+                var existingAccount = await _db.Accounts.FirstOrDefaultAsync(a => a.Email == registerShopReq.Email);
+                if (existingAccount is not null)
+                    return BadRequest(new { message = "Email account is registerd!" });
+
+                var newAccount = _mapper.Map<Account>(registerShopReq);
+
+                // verify token 5 digit
+                var random = new Random();
+                newAccount.VerifyToken = random
+                    .Next((int)Math.Pow(10, ConstConfig.VerifyEmailTokenLength - 1),
+                        (int)Math.Pow(10, ConstConfig.VerifyEmailTokenLength))
+                    .ToString();
+
+                await _db.AddAsync(newAccount);
+                await _db.SaveChangesAsync();
+
+                string emailBody = $"<h1>Đây là email xác thực đăng ký tài khoản bán hàng tại trang web thương mại điện tử</h1><p>Mã xác thực đăng ký tài khoản của bạn là:</p><h2>{newAccount.VerifyToken}</h2><p>Chúng tôi xin chân thành cảm ơn</p>";
+                var emailRequest = new EmailReqDto()
+                {
+                    To = newAccount.Email,
+                    Body = emailBody,
+                    Subject = "RSVP: Xác thực đăng ký tài khoản bán hàng tại Website thương mại điện tử"
+                };
+
+                _emailService.SendEmail(emailRequest);
+
+                return Created();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        // POST: api/<AuthController>/register
+        [HttpPost]
         [Route("verify-email")]
         public async Task<ActionResult> VerifyEmail([FromBody] VerifyEmailReqDto verifyEmailReq)
         {

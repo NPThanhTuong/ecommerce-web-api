@@ -9,6 +9,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient(); //KHA AI THEM VAO
+
+builder.Services.AddControllersWithViews();//KHA AI
+
 // Add services to the container.
 builder.Services.AddDbContext<EcommerceDbContext>(options =>
 {
@@ -109,6 +113,11 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Chatbot}/{action=Index}/{id?}");
+
 app.MapControllers();
+
 
 app.Run();

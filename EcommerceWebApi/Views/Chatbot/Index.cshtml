@@ -1,0 +1,71 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                xfbml: true,
+                version: 'v12.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+</head>
+<body>
+    <h2>Chatbot</h2>
+    <div id="chatBox"></div>
+    <input type="text" id="userMessage" placeholder="Nhập tin nhắn..." />
+    <button id="sendBtn">Gửi</button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#sendBtn').click(function () {
+                var message = $('#userMessage').val();
+                if (message.trim() !== '') {
+                    $('#chatBox').append('<div class="message user"><strong>You:</strong> ' + message + '</div>');
+                    $('#userMessage').val('');
+
+                    $.ajax({
+                        url: '/Chatbot/SendMessage',
+                        type: 'POST',
+                        data: { message: message },
+                        success: function (data) {
+                            $('#chatBox').append('<div class="message bot"><strong>Bot:</strong> ' + data.response + '</div>');
+                            $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+                        },
+                        error: function () {
+                            $('#chatBox').append('<div class="message bot"><strong>Bot:</strong> Không thể kết nối với chatbot.</div>');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <div class="fb-customerchat"
+         attribution="setup_tool"
+         page_id="<61566259492333>"
+         theme_color="#0084ff"
+         logged_in_greeting="Chào bạn! Shop có thể giúp gì cho bạn?"
+         logged_out_greeting="Chào bạn! Shop có thể giúp gì cho bạn?">
+    </div>
+
+
+</body>
+</html>

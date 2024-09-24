@@ -19,6 +19,8 @@ namespace EcommerceWebApi.Controllers
         private readonly EcommerceDbContext _db = db;
         private readonly IMapper _mapper = mapper;
 
+
+
         // GET: api/<SalesController>
         [HttpGet]
         public async Task<ActionResult<List<SaleEventResDto>>> GetAllSales()

@@ -7,64 +7,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <title>Chatbot</title>
 
-    <script>
-        window.fbAsyncInit = function () {
-            FB.init({
-                xfbml: true,
-                version: 'v12.0'
-            });
-        };
+    <style>
+        :root {
+            --chat-color: #001F3F;
+            --user-color: #EAD8B1;
+        }
 
-        (function (d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
-    </script>
+        #chatbot-container {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 50px;
+            width: 18.75rem;
+            height: 25rem;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        #chatbot-header {
+            background-color: var(--chat-color);
+            color: var(--user-color);
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #chatbot-header i{
+            font-size:2.5rem;
+        }
+
+        #chatBox {
+            height: 74%;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        #chatbot-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background-color: var(--chat-color);
+            color: var(--user-color);
+            border: none;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        #userMessage {
+            width: 72%;
+            padding: 0.5rem;
+            border: 1px solid var(--user-color);
+            border-radius: 5px;
+            margin-left: 1%;
+        }
+
+        #sendBtn {
+            width: 18%;
+            padding: 0.5rem;
+            background-color: var(--chat-color);
+            color: var(--user-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .message.user {
+            background-color: var(--user-color);
+            margin-left: auto;
+            color: var(--chat-color)
+        }
+
+        .message.bot {
+            background-color: var(--chat-color);
+            margin-right: auto;
+            text-align: left;
+            color: var(--user-color);
+        }
+
+        .message.user, .message.bot {
+            width: fit-content;
+            max-width: 80%;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.5rem;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 <body>
-    <h2>Chatbot</h2>
-    <div id="chatBox"></div>
-    <input type="text" id="userMessage" placeholder="Nhập tin nhắn..." />
-    <button id="sendBtn">Gửi</button>
+    <button id="chatbot-icon"><i class="fa-brands fa-rocketchat"></i></button>
+
+    <div id="chatbot-container">
+        <div id="chatbot-header"><i class="fa-brands fa-bots"></i></div>
+        <div id="chatBox"></div>
+        <input type="text" id="userMessage" placeholder="Nhập tin nhắn..." />
+        <button id="sendBtn">Gửi</button>
+    </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
+            let firstOpen = true;
+
+            $('#chatbot-icon').click(function () {
+                $('#chatbot-container').toggle();
+                if (firstOpen) {
+                    firstOpen = false;
+                    sendGreeting();
+                }
+            });
+
             $('#sendBtn').click(function () {
+                sendMessage();
+            });
+
+            $('#userMessage').keypress(function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            function sendGreeting() {
+                $('#chatBox').append('<div class="message bot"><strong></strong> Chào bạn! Mình có thể giúp gì cho bạn?</div>');
+                $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight); // Đảm bảo cuộn xuống sau khi gửi lời chào
+            }
+
+            function sendMessage() {
                 var message = $('#userMessage').val();
                 if (message.trim() !== '') {
-                    $('#chatBox').append('<div class="message user"><strong>You:</strong> ' + message + '</div>');
+                    $('#chatBox').append('<div class="message user"><strong></strong> ' + message + '</div>');
                     $('#userMessage').val('');
+
+                    // Cuộn xuống sau khi gửi tin nhắn
+                    $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
 
                     $.ajax({
                         url: '/Chatbot/SendMessage',
                         type: 'POST',
                         data: { message: message },
                         success: function (data) {
-                            $('#chatBox').append('<div class="message bot"><strong>Bot:</strong> ' + data.response + '</div>');
-                            $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+                            $('#chatBox').append('<div class="message bot"><strong></strong> ' + data.response + '</div>');
+                            $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight); // Cuộn xuống sau khi nhận được phản hồi
                         },
                         error: function () {
-                            $('#chatBox').append('<div class="message bot"><strong>Bot:</strong> Không thể kết nối với chatbot.</div>');
+                            $('#chatBox').append('<div class="message bot"><strong></strong> Không thể kết nối với chatbot.</div>');
+                            $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight); // Cuộn xuống khi có lỗi
                         }
                     });
                 }
-            });
+            }
         });
     </script>
-
-    <div class="fb-customerchat"
-         attribution="setup_tool"
-         page_id="<61566259492333>"
-         theme_color="#0084ff"
-         logged_in_greeting="Chào bạn! Shop có thể giúp gì cho bạn?"
-         logged_out_greeting="Chào bạn! Shop có thể giúp gì cho bạn?">
-    </div>
 
 
 </body>

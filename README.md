@@ -26,3 +26,5 @@
 **password:** 9qtcvRK2xFfJQX8X9P
 
 3. Vào mục **Messages** để xem thư đã gửi và nhận.
+
+## CÁC BẠN MUỐN TEST CHATBOT THÌ CẦN QUA BÊN https://github.com/DoanKhaAi/RasaTMDT ĐỂ DOWNLOAD MODEL 

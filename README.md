@@ -27,4 +27,4 @@
 
 3. Vào mục **Messages** để xem thư đã gửi và nhận.
 
-## CÁC BẠN MUỐN TEST CHATBOT THÌ CẦN QUA BÊN https://github.com/DoanKhaAi/RasaTMDT ĐỂ DOWNLOAD MODEL 
+## Các bạn muốn test Chatbot thì qua bên https://github.com/DoanKhaAi/RasaTMDT để download model 

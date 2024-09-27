@@ -181,7 +181,7 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        // POST: api/<AuthController>/register
+        // POST: api/<AuthController>/verify-email
         [HttpPost]
         [Route("verify-email")]
         public async Task<ActionResult> VerifyEmail([FromBody] VerifyEmailReqDto verifyEmailReq)

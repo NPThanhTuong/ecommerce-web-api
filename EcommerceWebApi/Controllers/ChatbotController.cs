@@ -3,14 +3,11 @@ using Newtonsoft.Json.Linq;
 
 namespace EcommerceWebApi.Controllers
 {
-    public class ChatbotController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ChatbotController(HttpClient httpClient) : ControllerBase
     {
-        private readonly HttpClient _httpClient;
-
-        public ChatbotController(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
+        private readonly HttpClient _httpClient = httpClient;
 
         [HttpPost]
         public async Task<IActionResult> SendMessage(string message)
@@ -24,23 +21,14 @@ namespace EcommerceWebApi.Controllers
                 message = message
             };
 
-
             var response = await _httpClient.PostAsJsonAsync(rasaUrl, payload);
-
 
             var content = await response.Content.ReadAsStringAsync();
             var responseMessages = JArray.Parse(content);
 
-
             var rasaResponse = string.Join(" ", responseMessages.Select(m => m["text"]?.ToString()));
 
-            return Json(new { response = rasaResponse });
-        }
-
-        [HttpGet]
-        public IActionResult Index()
-        {
-            return View();
+            return Ok(new { response = rasaResponse });
         }
     }
 }

@@ -60,8 +60,8 @@ namespace EcommerceWebApi.Controllers
 
             if (!string.IsNullOrEmpty(queryParams.Search))
                 query = query
-                    .Where(p => p.Name.Contains(queryParams.Search, StringComparison.CurrentCultureIgnoreCase) ||
-                        p.Description.Contains(queryParams.Search, StringComparison.CurrentCultureIgnoreCase));
+                    .Where(p => p.Name.ToLower().Contains(queryParams.Search.ToLower()) ||
+                        p.Description.ToLower().Contains(queryParams.Search.ToLower()));
 
             // đếm số lượng phần tử sau khi filter
             int count = await query.CountAsync();

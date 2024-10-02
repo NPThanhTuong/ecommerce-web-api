@@ -780,6 +780,7 @@ namespace EcommerceWebApi.Data
                 Name = "Khuyến Mãi Mùa Hè",
                 Description = "Giảm giá 20% cho tất cả các sản phẩm thời trang trong mùa hè này.",
                 Discount = 0.2f,
+                Illustration = "image1.jpg",
                 StartDate = new DateTime(2024, 6, 1),
                 EndDate = new DateTime(2024, 6, 30)
             },
@@ -789,6 +790,7 @@ namespace EcommerceWebApi.Data
                 Name = "Ngày Hội Công Nghệ",
                 Description = "Giảm giá 15% cho các sản phẩm điện tử và công nghệ.",
                 Discount = 0.15f,
+                Illustration = "image2.jpg",
                 StartDate = new DateTime(2024, 9, 10),
                 EndDate = new DateTime(2024, 9, 20)
             },
@@ -798,6 +800,7 @@ namespace EcommerceWebApi.Data
                 Name = "Khuyến Mãi Cuối Năm",
                 Description = "Giảm giá lên đến 30% cho tất cả các sản phẩm gia dụng và mỹ phẩm.",
                 Discount = 0.3f,
+                Illustration = "image3.jpg",
                 StartDate = new DateTime(2024, 12, 1),
                 EndDate = new DateTime(2024, 12, 31)
             });

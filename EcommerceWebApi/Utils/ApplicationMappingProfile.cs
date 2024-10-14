@@ -79,6 +79,11 @@ namespace EcommerceWebApi.Utils
             // Customer Type
             CreateMap<CustomerType, CustomerTypeResDto>();
 
+            // Checkout
+            CreateMap<CreateDetailOrderReqDto, DetailOrder>()
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom((src, dest, _, context) => context.Items["OrderId"]));
+
+            CreateMap<HandleDetailOrderReqDto, DetailOrder>();
         }
     }
 }

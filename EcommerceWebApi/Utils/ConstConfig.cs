@@ -43,5 +43,11 @@
         public const string AllowAllOrigins = "AllowAll";
         public const int ClientPort = 3000;
 
+        //Claims
+        public const string AccountIdClaimType = "accountId";
+        public const string AvatarClaimType = "avatar";
+        public const string UserIdClaimType = "userId";
+
+
     }
 }

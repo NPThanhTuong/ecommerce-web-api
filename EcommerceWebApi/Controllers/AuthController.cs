@@ -35,7 +35,10 @@ namespace EcommerceWebApi.Controllers
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.ToDictionary());
 
-                var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Email == loginReq.Email);
+                var account = await _db.Accounts
+                    .Include(a => a.Shop)
+                    .Include(a => a.Customer)
+                    .FirstOrDefaultAsync(a => a.Email == loginReq.Email);
                 if (account is null)
                     return Unauthorized(new { message = "Email or password is incorrect!" });
 
@@ -47,15 +50,15 @@ namespace EcommerceWebApi.Controllers
 
 
                 Claim[] claims = [
-                    new Claim("accountId", account.Id.ToString()),
-                    new Claim("avatar", account.Avatar),
+                    new Claim(ConstConfig.AccountIdClaimType, account.Id.ToString()),
+                    new Claim(ConstConfig.AvatarClaimType, account.Avatar),
                     new Claim(ClaimTypes.Email, account.Email),
                     new Claim(ClaimTypes.Role, account.RoleId.ToString())
                 ];
 
                 if (account.Customer is not null)
                 {
-                    Claim userId = new("userId", account.Customer.Id.ToString());
+                    Claim userId = new(ConstConfig.UserIdClaimType, account.Customer.Id.ToString());
                     Claim username = new(ClaimTypes.Name, account.Customer.Name);
 
                     claims = [.. claims, userId, username];
@@ -63,7 +66,7 @@ namespace EcommerceWebApi.Controllers
                 }
                 else if (account.Shop is not null)
                 {
-                    Claim userId = new("userId", account.Shop.Id.ToString());
+                    Claim userId = new(ConstConfig.UserIdClaimType, account.Shop.Id.ToString());
                     Claim username = new(ClaimTypes.Name, account.Shop.Name);
                     claims = [.. claims, userId, username];
                 }

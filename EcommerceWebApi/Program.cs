@@ -11,15 +11,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient(); //KHA AI THEM VAO
 
-builder.Services.AddControllersWithViews();//KHA AI
-
 // Add services to the container.
 builder.Services.AddDbContext<EcommerceDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Serialize enums as strings
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -88,9 +91,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            // Customize the response when unauthorized access occurs
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+            return context.Response.WriteAsync("{\"message\": \"You are not authorized to access this resource.\"}");
+        }
+    };
 });
 
-builder.Services.AddAuthorizationBuilder();
+builder.Services.AddAuthorizationBuilder()
+     .AddPolicy(ConstConfig.AdminPolicy, policy =>
+        policy.RequireRole(ConstConfig.AdminRoleName)
+     )
+     .AddPolicy(ConstConfig.ShopPolicy, policy =>
+         policy.RequireRole(ConstConfig.AdminRoleName, ConstConfig.ShopRoleName)
+     )
+     .AddPolicy(ConstConfig.UserPolicy, policy =>
+          policy.RequireRole(ConstConfig.AdminRoleName, ConstConfig.ShopRoleName, ConstConfig.UserRoleName)
+     );
 
 // Add email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -112,10 +136,6 @@ app.UseCors(ConstConfig.AllowAllOrigins);
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Chatbot}/{action=Index}/{id?}");
 
 app.MapControllers();
 

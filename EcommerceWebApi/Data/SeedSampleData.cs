@@ -692,16 +692,16 @@ namespace EcommerceWebApi.Data
             new DetailOrder
             {
                 OrderId = 4,
-                ProductId = 4,
+                ProductId = 5,
                 Quantity = 1,
-                UnitPrice = 3899.0m,
+                UnitPrice = 59.9m,
             },
             new DetailOrder
             {
                 OrderId = 4,
-                ProductId = 5,
-                Quantity = 1,
-                UnitPrice = 59.9m,
+                ProductId = 6,
+                Quantity = 6,
+                UnitPrice = 89.0m,
             });
 
             return builder;
@@ -751,7 +751,7 @@ namespace EcommerceWebApi.Data
             new Rating
             {
                 CustomerId = 2,
-                ProductId = 4,
+                ProductId = 5,
                 OrderId = 4,
                 Score = 2,
                 Comment = "Sản phẩm bị lỗi, không hài lòng.",
@@ -761,7 +761,7 @@ namespace EcommerceWebApi.Data
             new Rating
             {
                 CustomerId = 2,
-                ProductId = 5,
+                ProductId = 6,
                 OrderId = 4,
                 Score = 5,
                 Comment = "Rất hài lòng với chất lượng và dịch vụ.",

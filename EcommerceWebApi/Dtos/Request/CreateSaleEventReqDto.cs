@@ -1,16 +1,14 @@
-﻿using EcommerceWebApi.Models;
-
-namespace EcommerceWebApi.Dtos.Request
+﻿namespace EcommerceWebApi.Dtos.Request
 {
-    public class SaleEventReqDto
+    public class CreateSaleEventReqDto
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Illustration { get; set; } = string.Empty;
         public float Discount { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-
-        public List<CustomerType> CustomerTypes { get; set; } = [];
-        public List<Product> Products { get; set; } = [];
+        public List<int> CustomerTypeIds { get; set; } = [];
+        public List<int> ProductIds { get; set; } = [];
     }
 }

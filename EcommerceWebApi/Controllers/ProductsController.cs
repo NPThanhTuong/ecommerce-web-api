@@ -7,6 +7,7 @@ using EcommerceWebApi.Utils;
 using EcommerceWebApi.Utils.QueryParams;
 using EcommerceWebApi.Validators;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -107,11 +108,11 @@ namespace EcommerceWebApi.Controllers
                     break;
             }
 
-            // map từ product sang DTO
             var productList = await query
                 .Skip((queryParams.Page - 1) * ConstConfig.PageSize)
                 .Take(ConstConfig.PageSize)
                 .ToListAsync();
+            // map từ product sang DTO
             var result = _mapper.Map<List<ProductResDto>>(productList);
 
             return Ok(Helper.GetPaginationResult(result, count));
@@ -146,8 +147,9 @@ namespace EcommerceWebApi.Controllers
         }
 
         // POST api/<ProductsController>
+        [Authorize(Roles = ConstConfig.ShopRoleName)]
         [HttpPost]
-        [SwaggerOperation(Summary = "Thêm 1 sản phẩm mới")]
+        [SwaggerOperation(Summary = "Thêm 1 sản phẩm mới (role shop)")]
         public async Task<ActionResult> Post([FromBody] ProductReqDto product)
         {
             var validator = new ProductValidator();
@@ -179,8 +181,9 @@ namespace EcommerceWebApi.Controllers
         }
 
         // PUT api/<ProductsController>/5
+        [Authorize(Policy = ConstConfig.ShopPolicy)]
         [HttpPut("{id}")]
-        [SwaggerOperation(Summary = "Cập nhật 1 sản phẩm theo ID")]
+        [SwaggerOperation(Summary = "Cập nhật 1 sản phẩm theo ID (role shop, admin)")]
         public async Task<ActionResult> Put(int id, [FromBody] ProductReqDto updatProduct)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -216,8 +219,9 @@ namespace EcommerceWebApi.Controllers
         }
 
         // DELETE api/<ProductsController>/5
+        [Authorize(Policy = ConstConfig.ShopPolicy)]
         [HttpDelete("{id}")]
-        [SwaggerOperation(Summary = "Xóa 1 sản phẩm theo ID")]
+        [SwaggerOperation(Summary = "Xóa 1 sản phẩm theo ID (role shop, admin)")]
         public async Task<ActionResult> Delete(int id)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -240,8 +244,9 @@ namespace EcommerceWebApi.Controllers
         }
 
         // POST api/<ProductsController>/2/Images
+        [Authorize(Policy = ConstConfig.ShopPolicy)]
         [HttpPost("{id}/Images")]
-        [SwaggerOperation(Summary = "Thêm 1 mảng các hình ảnh cho 1 sản phẩm theo ID")]
+        [SwaggerOperation(Summary = "Thêm 1 mảng các hình ảnh cho 1 sản phẩm theo ID (role shop, admin)")]
         public async Task<ActionResult> PostImage(int id, [FromBody] List<ProductImageReqDto> images)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -278,8 +283,9 @@ namespace EcommerceWebApi.Controllers
         }
 
         // DELETE api/<ProductsController>/2/Images/3
+        [Authorize(Policy = ConstConfig.ShopPolicy)]
         [HttpDelete("{productId}/Images/{imageId}")]
-        [SwaggerOperation(Summary = "Xóa 1 hình ảnh theo ID của sản phẩm và hình ảnh")]
+        [SwaggerOperation(Summary = "Xóa 1 hình ảnh theo ID của sản phẩm và hình ảnh (role shop, admin)")]
         public async Task<ActionResult> PostImage(int productId, int imageId)
         {
             if (productId <= 0 || imageId <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));

@@ -36,6 +36,7 @@ namespace EcommerceWebApi.Controllers
                     return BadRequest(validationResult.ToDictionary());
 
                 var account = await _db.Accounts
+                    .Include(a => a.Role)
                     .Include(a => a.Shop)
                     .Include(a => a.Customer)
                     .FirstOrDefaultAsync(a => a.Email == loginReq.Email);
@@ -53,7 +54,7 @@ namespace EcommerceWebApi.Controllers
                     new Claim(ConstConfig.AccountIdClaimType, account.Id.ToString()),
                     new Claim(ConstConfig.AvatarClaimType, account.Avatar),
                     new Claim(ClaimTypes.Email, account.Email),
-                    new Claim(ClaimTypes.Role, account.RoleId.ToString())
+                    new Claim(ClaimTypes.Role, account.Role.Name.ToLower())
                 ];
 
                 if (account.Customer is not null)

@@ -49,5 +49,12 @@
         public const string UserIdClaimType = "userId";
 
 
+        // Authorization
+        public const string AdminPolicy = "AdminPolicy";
+        public const string ShopPolicy = "ShopPolicy";
+        public const string UserPolicy = "UserPolicy";
+        public const string AdminRoleName = "admin";
+        public const string UserRoleName = "user";
+        public const string ShopRoleName = "shop";
     }
 }

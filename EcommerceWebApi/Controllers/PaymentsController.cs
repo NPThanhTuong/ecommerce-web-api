@@ -6,8 +6,10 @@ using EcommerceWebApi.Models;
 using EcommerceWebApi.Utils;
 using EcommerceWebApi.Utils.QueryParams;
 using EcommerceWebApi.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,47 +17,16 @@ namespace EcommerceWebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PaymentController(EcommerceDbContext db, IMapper mapper, IConfiguration config) : ControllerBase
+    public class PaymentsController(EcommerceDbContext db, IMapper mapper, IConfiguration config) : ControllerBase
     {
         private readonly EcommerceDbContext _db = db;
         private readonly IMapper _mapper = mapper;
         private readonly IConfiguration _config = config;
 
-
-        // GET: api/<PaymentController>
-        //[HttpGet]
-        //public IEnumerable<string> Get()
-        //{
-        //    return new string[] { "value1", "value2" };
-        //}
-
-        //// GET api/<PaymentController>/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
-
-        //// POST api/<PaymentController>
-        //[HttpPost]
-        //public void Post([FromBody] string value)
-        //{
-
-        //}
-
-        //// PUT api/<PaymentController>/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
-        //{
-        //}
-
-        //// DELETE api/<PaymentController>/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
-
+        [Authorize(Roles = ConstConfig.UserRoleName)]
         [HttpGet("confirm")]
+        [SwaggerOperation(
+            Summary = "Xác nhận thanh toán đơn hàng (role user)")]
         public async Task<ActionResult<PaymentResDto>> GetOrderInfo([FromQuery] VnpayResQuery vnpayResQuery)
         {
             string rspCode = string.Empty;
@@ -177,14 +148,16 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
+        [Authorize(Roles = ConstConfig.UserRoleName)]
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Thanh toán đơn hàng (role user)")]
         public async Task<ActionResult> CreateOrder([FromBody] CreateOrderReqDto createOrderDtos)
         {
             int customerId = int.TryParse(HttpContext.User.FindFirst(ConstConfig.UserIdClaimType)?.Value, out int output) ? output : -1;
 
             var productsOnSale = GetAllProductOnSale();
             List<CreateDetailOrderReqDto> listDetailOrderDto = createOrderDtos.DetailOrderReqDtos;
-
 
             // Validation input
             if (listDetailOrderDto.Count == 0)
@@ -199,17 +172,29 @@ namespace EcommerceWebApi.Controllers
                     return BadRequest(validationResult.ToDictionary());
             }
 
+            var firstProduct = await _db.Products.FirstOrDefaultAsync(p => p.Id == listDetailOrderDto.ElementAt(0).ProductId);
+            if (firstProduct is null)
+                return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+            int shopId = firstProduct.ShopId;
+
             List<HandleDetailOrderReqDto> handleDetails = [];
             decimal total = 0;
 
             for (int i = 0; i < listDetailOrderDto.Count; i++)
             {
                 var reqProductId = listDetailOrderDto.ElementAt(i).ProductId;
+
                 if (productsOnSale.Any(p => p.Id == reqProductId))
                 {
                     var product = productsOnSale.First(p => p.Id == reqProductId);
+
+                    if (product.ShopId != shopId)
+                        return BadRequest(new { message = "Product is not belong to one shop!" });
+
                     var unitPrice = product.Price - ((decimal)product.DiscountPercent * product.Price);
                     var quantity = listDetailOrderDto.ElementAt(i).Quantity;
+
                     handleDetails.Add(new HandleDetailOrderReqDto()
                     {
                         ProductId = reqProductId,
@@ -224,6 +209,9 @@ namespace EcommerceWebApi.Controllers
                     var product = _db.Products.FirstOrDefault(p => p.Id == reqProductId);
                     if (product is not null)
                     {
+                        if (product.ShopId != shopId)
+                            return BadRequest(new { message = "Product is not belong to one shop!" });
+
                         var unitPrice = product.Price;
                         var quantity = listDetailOrderDto.ElementAt(i).Quantity;
 

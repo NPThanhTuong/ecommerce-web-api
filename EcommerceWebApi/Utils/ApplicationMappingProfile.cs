@@ -74,16 +74,48 @@ namespace EcommerceWebApi.Utils
             // Sale event
             CreateMap<SaleEvent, SaleEventResDto>();
             CreateMap<SaleEvent, SaleEventProductResDto>();
+            CreateMap<CreateSaleEventReqDto, SaleEvent>();
+            CreateMap<UpdateSaleEventReqDto, SaleEvent>()
+                .ForAllMembers(opts => opts
+                    .Condition((src, dest, srcMember) =>
+                    {
+                        // Ignore null value
+                        if (srcMember is null) return false;
+
+                        // Ignore min date time value
+                        if (srcMember is DateTime date) return date != DateTime.MinValue;
+
+                        // Ignore default float value
+                        if (srcMember is float f) return f != default;
+
+                        // Ignore empty string value
+                        if (srcMember is string str) return !string.IsNullOrWhiteSpace(str);
+
+                        return true;
+                    }));
 
 
             // Customer Type
             CreateMap<CustomerType, CustomerTypeResDto>();
 
             // Checkout
-            CreateMap<CreateDetailOrderReqDto, DetailOrder>()
-                .ForMember(dest => dest.OrderId, opt => opt.MapFrom((src, dest, _, context) => context.Items["OrderId"]));
-
             CreateMap<HandleDetailOrderReqDto, DetailOrder>();
+            CreateMap<Order, OrderResDto>();
+            CreateMap<Address, AddressResDto>();
+            CreateMap<Product, CompactProductResDto>()
+                .ForMember(dest => dest.DiscountPercent,
+                    opt => opt.MapFrom(src =>
+                        src.SaleEvents
+                            .Where(se => DateTime.Now >= se.StartDate && DateTime.Now <= se.EndDate)
+                            .Select(se => se.Discount)
+                            .FirstOrDefault()
+                ))
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.ProductImages));
+            CreateMap<DetailOrder, DetailOrderResDto>();
+
+
+
+
         }
     }
 }

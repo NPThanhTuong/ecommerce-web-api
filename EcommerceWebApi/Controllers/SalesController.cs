@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
 using EcommerceWebApi.Data;
+using EcommerceWebApi.Dtos.Request;
 using EcommerceWebApi.Dtos.Response;
 using EcommerceWebApi.Models;
 using EcommerceWebApi.Utils;
+using EcommerceWebApi.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,8 +23,9 @@ namespace EcommerceWebApi.Controllers
         private readonly EcommerceDbContext _db = db;
         private readonly IMapper _mapper = mapper;
 
-        // GET: api/<SalesController>
         [HttpGet]
+        [SwaggerOperation(Summary =
+            "Lấy thông tin tất cả các chương trình giảm giá")]
         public async Task<ActionResult<List<SaleEventResDto>>> GetAllSales()
         {
             try
@@ -40,8 +45,9 @@ namespace EcommerceWebApi.Controllers
 
         }
 
-        // GET: api/<SalesController>/current
         [HttpGet("current")]
+        [SwaggerOperation(Summary =
+            "Lấy thông tin các chương trình giảm giá đang diễn ra")]
         public async Task<ActionResult<List<SaleEventResDto>>> GetAllCurrentSales()
         {
             try
@@ -62,8 +68,9 @@ namespace EcommerceWebApi.Controllers
 
         }
 
-        // GET: api/<SalesController>/upcoming
         [HttpGet("upcoming")]
+        [SwaggerOperation(Summary =
+            "Lấy thông tin các chương trình giảm giá sắp tới")]
         public async Task<ActionResult<List<SaleEventResDto>>> GetAllComingUpSales()
         {
             try
@@ -83,8 +90,9 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        // GET: api/<SalesController>/products/current
         [HttpGet("current/products")]
+        [SwaggerOperation(Summary =
+            "Lấy thông tin các chương trình và sản phẩm giảm giá đang diễn ra")]
         public async Task<ActionResult<List<SaleEventProductResDto>>> GetAllProductsCurrentSale()
         {
             try
@@ -106,8 +114,9 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        // GET: api/<SalesController>/products/upcoming
         [HttpGet("upcoming/products")]
+        [SwaggerOperation(Summary =
+            "Lấy thông tin các chương trình và sản phẩm giảm giá sắp tới")]
         public async Task<ActionResult<List<SaleEventProductResDto>>> GetAllProductsUpComingSale()
         {
             try
@@ -129,8 +138,9 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        // GET: api/<SalesController>/3
         [HttpGet("{id}")]
+        [SwaggerOperation(Summary =
+            "Lấy thông tin chi tiết chương trình giảm giá")]
         public async Task<ActionResult<SaleEventProductResDto>> GetDetailSaleEvent(int id)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -156,25 +166,270 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        //// POST api/<SalesController>
-        //[HttpPost]
-        //public async Task<ActionResult> Post([FromBody] string value)
-        //{
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpPost]
+        [SwaggerOperation(Summary =
+            "Thêm chương trình giảm giá mới (role admin)")]
+        public async Task<ActionResult> CreateSaleEvent([FromBody] CreateSaleEventReqDto createSaleEventReq)
+        {
+            try
+            {
+                var validator = new CreateSaleEventValidator();
+                var validationResult = await validator.ValidateAsync(createSaleEventReq);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.ToDictionary());
 
+                var newSaleEvent = _mapper.Map<SaleEvent>(createSaleEventReq);
 
-        //    return Ok();
-        //}
+                var customerTypeList = new List<CustomerTypeSaleEvent>();
+                var productList = new List<ProductSaleEvent>();
 
-        //// PUT api/<SalesController>/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
-        //{
-        //}
+                // Handle customer types
+                for (int i = 0; i < createSaleEventReq.CustomerTypeIds.Count; i++)
+                {
+                    var customeType = await _db.CustomerTypes
+                        .FirstOrDefaultAsync(ct => ct.Id == createSaleEventReq.CustomerTypeIds[i]);
+                    if (customeType is null)
+                        return NotFound(new { message = "Customer type is not found!" });
+                    else
+                        customerTypeList.Add(new CustomerTypeSaleEvent
+                        {
+                            CustomerTypeId = customeType.Id,
+                        });
+                }
 
-        //// DELETE api/<SalesController>/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+                // Handle product
+                for (int i = 0; i < createSaleEventReq.ProductIds.Count; i++)
+                {
+                    var product = await _db.Products
+                        .FirstOrDefaultAsync(p => p.Id == createSaleEventReq.ProductIds[i]);
+                    if (product is null)
+                        return NotFound(new { message = "Product is not found!" });
+                    else
+                        productList.Add(new ProductSaleEvent
+                        {
+                            ProductId = product.Id
+                        });
+                }
+
+                newSaleEvent.CustomerTypeSaleEvents = customerTypeList;
+                newSaleEvent.ProductSaleEvents = productList;
+
+                await _db.AddAsync(newSaleEvent);
+                await _db.SaveChangesAsync();
+
+                return Created();
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpPut("{id}")]
+        [SwaggerOperation(Summary =
+            "Sửa thông tin chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> UpdateSaleEventInfo(int id, [FromBody] UpdateSaleEventReqDto updateSaleEventReq)
+        {
+            try
+            {
+                if (id <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var validator = new UpdateSaleEventValidator();
+                var validationResult = await validator.ValidateAsync(updateSaleEventReq);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.ToDictionary());
+
+                var saleEvent = await _db.SaleEvents.FirstOrDefaultAsync(se => se.Id == id);
+                if (saleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+                _mapper.Map(updateSaleEventReq, saleEvent);
+
+                await _db.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+
+        }
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpDelete("{id}")]
+        [SwaggerOperation(Summary =
+            "Xóa chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> DeleteSaleEvent(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var saleEvent = await _db.SaleEvents.FirstOrDefaultAsync(se => se.Id == id);
+                if (saleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+                _db.SaleEvents.Remove(saleEvent);
+                await _db.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpPost("{saleEventId}/customer-types")]
+        [SwaggerOperation(Summary =
+            "Thêm loại khách hàng được áp dụng chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> AddCustomerTypeSaleEvent(int saleEventId, [FromBody] List<int> customerTypeIds)
+        {
+            try
+            {
+                if (saleEventId <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var saleEvent = await _db.SaleEvents.FirstOrDefaultAsync(se => se.Id == saleEventId);
+                if (saleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+                var customerTypeList = new List<CustomerTypeSaleEvent>();
+
+                for (int i = 0; i < customerTypeIds.Count; i++)
+                {
+                    var customeType = await _db.CustomerTypes
+                        .FirstOrDefaultAsync(ct => ct.Id == customerTypeIds[i]);
+                    if (customeType is null)
+                        return NotFound(new { message = "Customer type is not found!" });
+                    else
+                        customerTypeList.Add(new CustomerTypeSaleEvent
+                        {
+                            CustomerTypeId = customeType.Id,
+                        });
+                }
+
+                saleEvent.CustomerTypeSaleEvents.AddRange(customerTypeList);
+
+                await _db.SaveChangesAsync();
+
+                return Ok(new { message = "Add customer type for sale event successfully!" });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpDelete("{saleEventId}/customer-types/{customerTypeId}")]
+        [SwaggerOperation(Summary =
+            "Xóa loại khách hàng được áp dụng chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> RemoveCustomerTypeSaleEvent(int saleEventId, int customerTypeId)
+        {
+            try
+            {
+                if (saleEventId <= 0 || customerTypeId <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var customerTypeSaleEvent = await _db.CustomerTypeSaleEvents
+                    .FirstOrDefaultAsync(cs => cs.SaleEventId == saleEventId && cs.CustomerTypeId == customerTypeId);
+
+                if (customerTypeSaleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+                _db.CustomerTypeSaleEvents.Remove(customerTypeSaleEvent);
+                await _db.SaveChangesAsync();
+
+                return Ok(new { message = "Remove customer type for sale event successfully!" });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpPost("{saleEventId}/products")]
+        [SwaggerOperation(Summary =
+            "Thêm sản phẩm được áp dụng chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> AddProductSaleEvent(int saleEventId, [FromBody] List<int> productIds)
+        {
+            try
+            {
+                if (saleEventId <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var saleEvent = await _db.SaleEvents.FirstOrDefaultAsync(se => se.Id == saleEventId);
+                if (saleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+                var productList = new List<ProductSaleEvent>();
+
+                for (int i = 0; i < productIds.Count; i++)
+                {
+                    var product = await _db.Products
+                        .FirstOrDefaultAsync(p => p.Id == productIds[i]);
+                    if (product is null)
+                        return NotFound(new { message = "Product is not found!" });
+                    else
+                        productList.Add(new ProductSaleEvent
+                        {
+                            ProductId = product.Id,
+                        });
+                }
+
+                saleEvent.ProductSaleEvents.AddRange(productList);
+
+                await _db.SaveChangesAsync();
+
+                return Ok(new { message = "Add product for sale event successfully!" });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [HttpDelete("{saleEventId}/products/{productId}")]
+        [SwaggerOperation(Summary =
+            "Xóa sản phẩm được áp dụng chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> RemoveProductSaleEvent(int saleEventId, int productId)
+        {
+            try
+            {
+                if (saleEventId <= 0 || productId <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var productSaleEvent = await _db.ProductSaleEvents
+                    .FirstOrDefaultAsync(cs => cs.SaleEventId == saleEventId && cs.ProductId == productId);
+
+                if (productSaleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+                _db.ProductSaleEvents.Remove(productSaleEvent);
+                await _db.SaveChangesAsync();
+
+                return Ok(new { message = "Remove product for sale event successfully!" });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
     }
 }

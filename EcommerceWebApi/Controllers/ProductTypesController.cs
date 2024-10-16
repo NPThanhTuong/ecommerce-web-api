@@ -5,8 +5,10 @@ using EcommerceWebApi.Dtos.Response;
 using EcommerceWebApi.Models;
 using EcommerceWebApi.Utils;
 using EcommerceWebApi.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EcommerceWebApi.Controllers
 {
@@ -42,8 +44,10 @@ namespace EcommerceWebApi.Controllers
             return Ok(result);
         }
 
-        // POST api/<ProductTypes>
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Thêm loại sản phẩm (role admin)")]
         public async Task<ActionResult> PostAsync([FromBody] ProductTypeReqDto productType)
         {
             var validator = new ProductTypeValidator();
@@ -66,8 +70,10 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        // PUT api/<ProductTypes>/5
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
         [HttpPut("{id}")]
+        [SwaggerOperation(
+            Summary = "Cập nhật loại sản phẩm (role admin)")]
         public async Task<ActionResult> PutAsync(int id, [FromBody] ProductTypeReqDto updateProductType)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
@@ -95,7 +101,11 @@ namespace EcommerceWebApi.Controllers
         }
 
         // DELETE api/<ProductType>/5
+
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
         [HttpDelete("{id}")]
+        [SwaggerOperation(
+           Summary = "Xóa loại sản phẩm (role admin)")]
         public async Task<ActionResult> DeleteAsync(int id)
         {
             if (id <= 0) return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));

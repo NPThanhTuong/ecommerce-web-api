@@ -3,6 +3,7 @@ using EcommerceWebApi.Data;
 using EcommerceWebApi.Dtos.Request;
 using EcommerceWebApi.Dtos.Response;
 using EcommerceWebApi.Models;
+using EcommerceWebApi.Services.Email;
 using EcommerceWebApi.Utils;
 using EcommerceWebApi.Validators;
 using Microsoft.AspNetCore.Authorization;
@@ -18,10 +19,13 @@ namespace EcommerceWebApi.Controllers
     [ApiController]
     public class SalesController(
         EcommerceDbContext db,
-        IMapper mapper) : ControllerBase
+        IMapper mapper,
+        IEmailService emailService
+        ) : ControllerBase
     {
         private readonly EcommerceDbContext _db = db;
         private readonly IMapper _mapper = mapper;
+        private readonly IEmailService _emailService = emailService;
 
         [HttpGet]
         [SwaggerOperation(Summary =
@@ -403,8 +407,8 @@ namespace EcommerceWebApi.Controllers
             }
         }
 
-        [Authorize(Roles = ConstConfig.AdminRoleName)]
         [HttpDelete("{saleEventId}/products/{productId}")]
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
         [SwaggerOperation(Summary =
             "Xóa sản phẩm được áp dụng chương trình giảm giá (role admin)")]
         public async Task<ActionResult> RemoveProductSaleEvent(int saleEventId, int productId)
@@ -424,6 +428,61 @@ namespace EcommerceWebApi.Controllers
                 await _db.SaveChangesAsync();
 
                 return Ok(new { message = "Remove product for sale event successfully!" });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Helper.ErrorResponse(ConstConfig.InternalServer));
+            }
+        }
+
+        [HttpPost("{saleEventId}/notify-mail")]
+        [Authorize(Roles = ConstConfig.AdminRoleName)]
+        [SwaggerOperation(Summary =
+            "Gửi email thông báo đến các khách hàng được áp dụng chương trình giảm giá (role admin)")]
+        public async Task<ActionResult> SendSaleEventMail(int saleEventId)
+        {
+            try
+            {
+                if (saleEventId <= 0)
+                    return BadRequest(Helper.ErrorResponse(ConstConfig.InvalidId));
+
+                var saleEvent = await _db.SaleEvents
+                    .Include(s => s.CustomerTypes)
+                    .Include(s => s.Products)
+                        .ThenInclude(p => p.ProductImages)
+                    .FirstOrDefaultAsync(s => s.Id == saleEventId);
+
+                if (saleEvent is null)
+                    return NotFound(Helper.ErrorResponse(ConstConfig.NotFound));
+
+
+                var saleEventDto = _mapper.Map<SaleEventResDto>(saleEvent);
+                var customerTypeIds = saleEventDto.CustomerTypes.Select(ct => ct.Id).ToList();
+
+                var customerAppliedList = await _db.Customers
+                    .Include(c => c.Account)
+                    .Where(c => customerTypeIds.Contains(c.CustomerTypeId))
+                    .ToListAsync();
+
+                if (customerAppliedList.Count > 0)
+                {
+                    customerAppliedList.ForEach(customer =>
+                    {
+                        string emailBody = Helper.GetEmailSaleEventContent(customer.Name, saleEventDto.Name, DateOnly.FromDateTime(saleEventDto.StartDate), DateOnly.FromDateTime(saleEventDto.EndDate), saleEventDto.Discount);
+
+                        var emailRequest = new EmailReqDto()
+                        {
+                            To = customer.Account.Email,
+                            Body = emailBody,
+                            Subject = "[TATLN] Sự Kiện Khuyến Mãi Lớn Dành Riêng Cho Bạn!"
+                        };
+
+                        _emailService.SendEmail(emailRequest);
+                    });
+                }
+
+                return Ok(new { message = "Send notification email to customer successfully" });
             }
             catch
             {

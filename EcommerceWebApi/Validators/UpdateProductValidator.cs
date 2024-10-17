@@ -4,16 +4,15 @@ using FluentValidation;
 
 namespace EcommerceWebApi.Validators
 {
-    public class ProductValidator : AbstractValidator<ProductReqDto>
+    public class UpdateProductValidator : AbstractValidator<UpdateProductReqDto>
     {
-        public ProductValidator()
+
+        public UpdateProductValidator()
         {
             RuleFor(p => p.Name)
-                .NotEmpty()
                 .MaximumLength(ConstConfig.MediumNameLength);
 
             RuleFor(p => p.Description)
-                .NotEmpty()
                 .MaximumLength(ConstConfig.DescriptionLength);
 
             RuleFor(p => p.Price)

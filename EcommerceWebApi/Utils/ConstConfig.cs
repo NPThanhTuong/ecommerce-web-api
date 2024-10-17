@@ -4,6 +4,7 @@
     {
         // Pagination
         public const int PageSize = 2;
+        public const int NumberRelatedItem = 4;
 
         // Default field
         public const string DefaultAvatar = "no-avatar.jpg";

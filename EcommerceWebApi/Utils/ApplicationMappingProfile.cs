@@ -15,6 +15,18 @@ namespace EcommerceWebApi.Utils
 
             // Shop
             CreateMap<Shop, ShopResDto>();
+            CreateMap<UpdateShopReqDto, Shop>()
+                .ForAllMembers(opts => opts
+                    .Condition((src, dest, srcMember) =>
+                    {
+                        // Ignore null value
+                        if (srcMember is null) return false;
+
+                        // Ignore empty string value
+                        if (srcMember is string str) return !string.IsNullOrWhiteSpace(str);
+
+                        return true;
+                    }));
 
             // Product
             CreateMap<Product, ProductResDto>()
@@ -33,6 +45,24 @@ namespace EcommerceWebApi.Utils
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.ProductImages))
                 .ForMember(dest => dest.SoldQuantity, opt => opt.MapFrom(src => src.DetailOrders.Sum(dt => dt.Quantity)));
             CreateMap<ProductReqDto, Product>();
+            CreateMap<UpdateProductReqDto, Product>()
+                .ForAllMembers(opts => opts
+                    .Condition((src, dest, srcMember) =>
+                    {
+                        // Ignore null value
+                        if (srcMember is null) return false;
+
+                        // Ignore default decimal value
+                        if (srcMember is decimal d) return d != default;
+
+                        // Ignore default int value
+                        if (srcMember is int i) return i != default;
+
+                        // Ignore empty string value
+                        if (srcMember is string str) return !string.IsNullOrWhiteSpace(str);
+
+                        return true;
+                    }));
 
             CreateMap<Product, DetailProductResDto>()
                .ForMember(dest => dest.DiscountPercent,
@@ -98,6 +128,10 @@ namespace EcommerceWebApi.Utils
             // Customer Type
             CreateMap<CustomerType, CustomerTypeResDto>();
 
+            // Customer
+            CreateMap<Customer, CustomerResDto>();
+
+
             // Checkout
             CreateMap<HandleDetailOrderReqDto, DetailOrder>();
             CreateMap<Order, OrderResDto>();
@@ -113,6 +147,22 @@ namespace EcommerceWebApi.Utils
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.ProductImages));
             CreateMap<DetailOrder, DetailOrderResDto>();
 
+            // Account
+            CreateMap<Account, AccountResDto>();
+
+            CreateMap<UpdateAccountReqDto, Account>()
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForAllMembers(opts => opts
+                    .Condition((src, dest, srcMember) =>
+                    {
+                        // Ignore null value
+                        if (srcMember is null) return false;
+
+                        // Ignore empty string value
+                        if (srcMember is string str) return !string.IsNullOrWhiteSpace(str);
+
+                        return true;
+                    }));
 
 
 

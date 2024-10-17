@@ -1,22 +1,14 @@
-﻿using EcommerceWebApi.Utils.EnumTypes;
-using Swashbuckle.AspNetCore.Annotations;
+﻿using Swashbuckle.AspNetCore.Annotations;
 
 namespace EcommerceWebApi.Utils.QueryParams
 {
-    public class OrderReqQuery
+    public class ShopReqQuery
     {
         private int _page = 1;
         private string _sortBy = "id";
         private string _sortType = "asc";
 
-        [SwaggerParameter(Description = "Trạng thái của đơn hàng: { Processing: Đang xử lý, " +
-            "Shipping: Đang vận chuyển, " +
-            "Delivered: Đã giao, " +
-            "Cancelled: Đã hủy }")]
-        public OrderStatus? Status { get; set; }
-        [SwaggerParameter(Description = "Trạng thái thanh toán của đơn hàng: { Pending: Đang chờ thanh toán, " +
-            "Completed: Đã thanh toán thành công }")]
-        public PaymentStatus? PaymentStatus { get; set; }
+        public string? Search { get; set; }
 
         public int Page
         {
@@ -25,8 +17,9 @@ namespace EcommerceWebApi.Utils.QueryParams
         }
 
         [SwaggerParameter(Description = "SortBy: attributeName (vd: id) " +
-           "attributeName{id, date} " +
-           "date: ngày đặt")]
+            "attributeName{id, name} " +
+            "id: mã cửa hàng" +
+            "name: tên cửa hàng")]
         public string SortBy
         {
             get => _sortBy;

@@ -108,10 +108,20 @@ namespace EcommerceWebApi.Controllers
                     break;
             }
 
-            var productList = await query
-                .Skip((queryParams.Page - 1) * ConstConfig.PageSize)
-                .Take(ConstConfig.PageSize)
-                .ToListAsync();
+            List<Product> productList = [];
+
+            if (queryParams.Pagination)
+            {
+                productList = await query
+                    .Skip((queryParams.Page - 1) * ConstConfig.PageSize)
+                    .Take(ConstConfig.PageSize)
+                    .ToListAsync();
+            }
+            else
+            {
+                productList = await query.ToListAsync();
+            }
+
             // map từ product sang DTO
             var result = _mapper.Map<List<ProductResDto>>(productList);
 

@@ -12,7 +12,9 @@ namespace EcommerceWebApi.Utils.QueryParams
         public string? FByPrice { get; set; }
         [SwaggerParameter(Description = "FByType: typeId1,typeId2,... (vd: 1,3,8) ")]
         public string? FByType { get; set; }
+        [SwaggerParameter(Description = "Pagination: true/false")]
         public string? Search { get; set; }
+        public bool Pagination { get; set; } = true;
 
         public int Page
         {
